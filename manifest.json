@@ -1,0 +1,43 @@
+{
+  "dxt_version": "0.3",
+  "name": "tKOIAgent",
+  "version": "1.0.0",
+  "description": "Transcriptomic Knowledge Graph Integration Agent - Contextualize RNAseq studies using biomedical knowledge graphs",
+  "long_description": "tKOIAgent is a lightweight Model Context Protocol (MCP) server that enables contextualization of transcriptomic data through biomedical knowledge graph queries. The agent connects RNA sequencing studies with comprehensive knowledge graphs containing genes, proteins, diseases, pathways, anatomical structures, and cellular processes. Claude handles data analysis while the agent provides streamlined knowledge graph query capabilities.",
+  "author": {
+    "name": "Wanjun Gu",
+    "email": "wanjun.gu@ucsf.edu",
+    "url": "https://broccolito.github.io/"
+  },
+  "icon": "logo.png",
+  "homepage": "https://github.com/BaranziniLab/tKOIAgent",
+  "license": "MIT",
+  "server": {
+    "type": "python",
+    "entry_point": "server/main.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with", "fastmcp>=2.11.2",
+        "--with", "neo4j>=5.28.2",
+        "--with", "pydantic>=2.0.0",
+        "${__dirname}/server/main.py"
+      ],
+      "env": {
+        "TKOI_LOG_LEVEL": "${user_config.TKOI_LOG_LEVEL}"
+      }
+    }
+  },
+  "keywords": [
+    "bioinformatics",
+    "rnaseq",
+    "transcriptomics",
+    "knowledge-graph",
+    "mcp",
+    "biomedical",
+    "contextualization",
+    "cypher",
+    "neo4j"
+  ]
+}
