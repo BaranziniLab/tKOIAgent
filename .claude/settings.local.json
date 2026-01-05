@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(R --version:*)",
+      "Bash(chmod:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv run:*)",
+      "Bash(python3:*)",
+      "Bash(mcpb pack --help:*)",
+      "Bash(mcpb pack:*)",
+      "Bash(mcpb init --help:*)",
+      "Bash(shasum:*)"
+    ]
+  }
+}

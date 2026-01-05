@@ -1,0 +1,152 @@
+{
+  "manifest_version": "0.2",
+  "name": "tKOIAgent",
+  "version": "1.0.0",
+  "description": "MCP server for automated transcriptomics analysis using tKOI (Transcriptomics Knowledge graph-driven Omics Integration) and SPOKE biomedical knowledge graph. Provides 13 specialized tools for environment setup, data processing, gene ID conversion, network analysis, visualization, and knowledge graph integration.",
+  "author": {
+    "name": "tKOIAgent Development Team",
+    "email": "contact@example.com"
+  },
+  "server": {
+    "type": "python",
+    "entry_point": "server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "${__dirname}",
+        "run",
+        "tKOIAgent"
+      ],
+      "env": {
+        "TKOI_LOGFC_THRESHOLD": "${user_config.TKOI_LOGFC_THRESHOLD}",
+        "TKOI_INDIRECT_LINK_THRESHOLD": "${user_config.TKOI_INDIRECT_LINK_THRESHOLD}",
+        "TKOI_TOPOLOGY_SIMILARITY": "${user_config.TKOI_TOPOLOGY_SIMILARITY}",
+        "TKOI_N_PERMUTATION": "${user_config.TKOI_N_PERMUTATION}",
+        "TKOI_DAMPING_FACTOR": "${user_config.TKOI_DAMPING_FACTOR}",
+        "TKOI_MAXIMUM_ITERATION": "${user_config.TKOI_MAXIMUM_ITERATION}"
+      }
+    }
+  },
+  "user_config": {
+    "TKOI_LOGFC_THRESHOLD": {
+      "type": "number",
+      "title": "Log Fold Change Threshold",
+      "description": "Minimum log fold-change threshold for identifying differentially expressed genes. Higher values (1.0-2.0) are more stringent, lower values (0.25-0.5) are more permissive. Typical range: 0.25-2.0",
+      "required": false,
+      "default": 0.25,
+      "sensitive": false
+    },
+    "TKOI_INDIRECT_LINK_THRESHOLD": {
+      "type": "number",
+      "title": "Indirect Link Threshold",
+      "description": "Required indirect connectivity for downstream gene inclusion. Integer value representing minimum number of indirect connections. Higher values (3-5) are more stringent, lower values (1-2) are more permissive. Typical range: 1-5",
+      "required": false,
+      "default": 3,
+      "sensitive": false
+    },
+    "TKOI_TOPOLOGY_SIMILARITY": {
+      "type": "number",
+      "title": "Topology Similarity Threshold",
+      "description": "Similarity threshold for selecting matched genes in permutations. Higher values (0.9-0.95) ensure very similar topology, lower values (0.7-0.85) allow more variation. Range: 0.0-1.0",
+      "required": false,
+      "default": 0.9,
+      "sensitive": false
+    },
+    "TKOI_N_PERMUTATION": {
+      "type": "number",
+      "title": "Number of Permutations",
+      "description": "Number of permutations for statistical significance testing. Higher values (1000-10000) provide more robust p-values but take longer, lower values (30-100) are faster but less precise. Minimum: 30",
+      "required": false,
+      "default": 30,
+      "sensitive": false
+    },
+    "TKOI_DAMPING_FACTOR": {
+      "type": "number",
+      "title": "Network Propagation Damping Factor",
+      "description": "Damping factor (alpha) for network propagation algorithm, controls restart probability. Higher values (0.9-0.95) allow information to propagate further through the network, lower values (0.7-0.8) keep information more localized. Typical range: 0.7-0.95",
+      "required": false,
+      "default": 0.85,
+      "sensitive": false
+    },
+    "TKOI_MAXIMUM_ITERATION": {
+      "type": "number",
+      "title": "Maximum Propagation Iterations",
+      "description": "Maximum iterations for network propagation convergence. Higher values (1000-5000) allow for more thorough convergence on complex networks, lower values (500-1000) are faster but may converge earlier. Minimum: 100",
+      "required": false,
+      "default": 500,
+      "sensitive": false
+    }
+  },
+  "tools": [
+    {
+      "name": "tkoi_check_r_installation",
+      "description": "Verify R installation and version requirements. Checks if R is installed, accessible, and meets the minimum version requirement (R 4.0+). Returns R version, installation path, and status."
+    },
+    {
+      "name": "tkoi_check_tkoi_installation",
+      "description": "Verify tKOI R package installation and availability. Checks if the tKOI package is installed and can be loaded. Returns installation status, version (if available), and any error messages."
+    },
+    {
+      "name": "tkoi_install_tkoi_package",
+      "description": "Install the tKOI R package from GitHub. Automatically installs devtools if needed, then installs tKOI from the specified GitHub repository. Returns installation status and any error messages."
+    },
+    {
+      "name": "tkoi_check_homebrew",
+      "description": "Check Homebrew installation status (macOS only). Verifies if Homebrew package manager is installed and provides installation instructions if missing. Useful for installing R and system dependencies."
+    },
+    {
+      "name": "tkoi_validate_data_file",
+      "description": "Validate gene expression data file. Supports absolute (/path/to/file.csv) or home-relative (~/Desktop/ms_analysis/data.csv) paths. Tool resolves the path and validates file structure. All analysis outputs will be saved in the same directory as the input file. If valid=false, STOP workflow."
+    },
+    {
+      "name": "tkoi_clean_data_file",
+      "description": "Clean and preprocess gene expression data. Supports absolute or home-relative (~/...) paths. Removes duplicate genes, filters zero-variance genes, handles missing values. Outputs saved to the same directory as input file."
+    },
+    {
+      "name": "tkoi_convert_gene_ids",
+      "description": "Convert gene IDs to human Ensembl format using MyGene.info API. Supports absolute or home-relative (~/...) paths. Auto-detects input format (Symbol, Entrez, Ensembl, HGNC), converts to human Ensembl IDs, maps mouse genes to human orthologs. IMPORTANT: First checks if gene IDs are already in Ensembl format - if so, skips conversion and returns original file. Outputs saved to the same directory as input file."
+    },
+    {
+      "name": "tkoi_run_analysis",
+      "description": "Execute tKOI network propagation analysis on gene expression data. IMPORTANT: May take 5-30 minutes depending on dataset size and n_permutation parameter - do not timeout. Supports absolute or home-relative (~/...) paths. Integrates SPOKE knowledge graph, performs network propagation using configurable parameters. All outputs (RDA and CSV formats) saved to the same directory as input file."
+    },
+    {
+      "name": "tkoi_generate_plots",
+      "description": "Generate publication-quality visualizations from tKOI analysis results. Creates volcano plots, network diagrams, heatmaps, and pathway enrichment plots using ggplot2. Outputs high-resolution PNG images (800 dpi by default)."
+    },
+    {
+      "name": "tkoi_query_spoke_genes",
+      "description": "Query SPOKE knowledge graph for gene information and relationships. Retrieves gene properties, associated diseases, pathways, protein interactions, and chemical compounds. Returns structured data from the biomedical knowledge graph."
+    },
+    {
+      "name": "tkoi_extract_spoke_subnetwork",
+      "description": "Extract and save a subnetwork from SPOKE centered on specified genes. Retrieves multi-hop neighborhoods including connected genes, proteins, diseases, and pathways. Exports subnetwork in multiple formats (GraphML, JSON, CSV) for visualization and analysis."
+    },
+    {
+      "name": "tkoi_get_gene_disease_associations",
+      "description": "Retrieve gene-disease associations from SPOKE knowledge graph. For each gene, finds associated diseases with evidence types, confidence scores, and literature references. Useful for interpreting analysis results in disease context."
+    },
+    {
+      "name": "tkoi_generate_analysis_report",
+      "description": "Generate comprehensive Markdown report summarizing tKOI analysis results. Includes methods description, statistical summaries, significant findings, visualizations, SPOKE integration results, file inventory, and citations. Outputs publication-ready README.md file."
+    }
+  ],
+  "license": "MIT",
+  "keywords": [
+    "transcriptomics",
+    "genomics",
+    "bioinformatics",
+    "gene-expression",
+    "network-analysis",
+    "knowledge-graph",
+    "SPOKE",
+    "R",
+    "data-science"
+  ],
+  "homepage": "https://github.com/yourusername/tKOIAgent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/tKOIAgent"
+  }
+}

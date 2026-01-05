@@ -1,0 +1,76 @@
+[project]
+name = "tKOIAgent"
+version = "1.0.0"
+description = "MCP server for automated transcriptomics analysis using tKOI (Transcriptomics Knowledge graph-driven Omics Integration) and SPOKE biomedical knowledge graph"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "tKOIAgent Development Team", email = "contact@example.com"}
+]
+maintainers = [
+    {name = "tKOIAgent Development Team", email = "contact@example.com"}
+]
+keywords = [
+    "transcriptomics",
+    "genomics",
+    "bioinformatics",
+    "gene-expression",
+    "network-analysis",
+    "knowledge-graph",
+    "SPOKE",
+    "MCP",
+    "Claude",
+    "R",
+    "data-science",
+    "systems-biology"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Healthcare Industry",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: R",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Framework :: FastAPI"
+]
+dependencies = [
+    "mcp>=1.0.0",
+    "pandas>=2.0.0",
+    "openpyxl>=3.1.0",
+    "numpy>=1.24.0",
+    "mygene>=3.2.2",
+    "neo4j>=5.14.0",
+    "python-dateutil>=2.8.2",
+    "requests>=2.31.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/tKOIAgent"
+Documentation = "https://github.com/yourusername/tKOIAgent#readme"
+Repository = "https://github.com/yourusername/tKOIAgent"
+Issues = "https://github.com/yourusername/tKOIAgent/issues"
+
+[project.scripts]
+tKOIAgent = "server:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tools", "utils"]
