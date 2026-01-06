@@ -1,0 +1,177 @@
+{
+  "manifest_version": "0.2",
+  "name": "tKOIAgent",
+  "version": "1.0.0",
+  "description": "Transcriptomics Knowledge Graph-Driven Omics Integration Agent for Claude Desktop",
+  "long_description": "tKOIAgent is a specialized multi-tool analysis agent that combines R-based transcriptomics analysis with Neo4j biological knowledge graph querying. It enables Claude to analyze gene expression data, perform network propagation using tKOI, and contextualize results using the SPOKE biomedical knowledge graph. The agent supports complete workflows from raw differential expression data to interpretable biological insights, including pathway enrichment, disease associations, and publication-quality visualizations.",
+  "author": {
+    "name": "Wanjun Gu",
+    "email": "wanjun.gu@ucsf.edu"
+  },
+  "icon": "assets/icon.png",
+  "server": {
+    "type": "python",
+    "entry_point": "server/main.py",
+    "mcp_config": {
+      "command": "${__dirname}/.python/bin/python3.12",
+      "args": [
+        "${__dirname}/server/main.py"
+      ],
+      "env": {
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "set_workdir",
+      "description": "Set the working directory for all R operations and file management"
+    },
+    {
+      "name": "get_state",
+      "description": "Get current tKOIAgent state including workdir, R availability, and Neo4j configuration"
+    },
+    {
+      "name": "create_R_file",
+      "description": "Create a new R script file in the working directory"
+    },
+    {
+      "name": "write_R_code",
+      "description": "Write R code to a script file (replaces existing content)"
+    },
+    {
+      "name": "append_R_code",
+      "description": "Append R code to an existing script file"
+    },
+    {
+      "name": "run_R_script",
+      "description": "Execute an R script file with support for long-running tKOI analysis (up to 1 hour timeout)"
+    },
+    {
+      "name": "run_R_expression",
+      "description": "Execute a single R expression for quick checks and inspections"
+    },
+    {
+      "name": "list_exports",
+      "description": "List files in the working directory with filtering and sorting options"
+    },
+    {
+      "name": "read_export",
+      "description": "Read content of a file from the working directory"
+    },
+    {
+      "name": "preview_table",
+      "description": "Preview a CSV/TSV file as structured tabular data"
+    },
+    {
+      "name": "inspect_R_objects",
+      "description": "Inspect R objects from the saved .RData workspace"
+    },
+    {
+      "name": "ggplot_style_check",
+      "description": "Analyze ggplot2 code and suggest publication-quality style improvements"
+    },
+    {
+      "name": "which_R",
+      "description": "Find R/Rscript executable in the system PATH"
+    },
+    {
+      "name": "list_R_files",
+      "description": "List all R script files in the working directory"
+    },
+    {
+      "name": "set_primary_file",
+      "description": "Set the primary R script file used by default for operations"
+    },
+    {
+      "name": "get_knowledge_graph_schema",
+      "description": "Retrieve the schema of the SPOKE biomedical knowledge graph including node types, relationships, and properties"
+    },
+    {
+      "name": "query_knowledge_graph",
+      "description": "Execute a READ-ONLY Cypher query on the SPOKE biomedical knowledge graph"
+    },
+    {
+      "name": "search_nodes",
+      "description": "Search for nodes in the SPOKE knowledge graph by name or identifier"
+    },
+    {
+      "name": "get_node_neighbors",
+      "description": "Get neighbors of a node in the knowledge graph with relationship filtering"
+    },
+    {
+      "name": "get_path_between_nodes",
+      "description": "Find shortest paths between two nodes in the knowledge graph"
+    },
+    {
+      "name": "get_gene_pathways",
+      "description": "Retrieve pathways associated with a list of genes from the knowledge graph"
+    },
+    {
+      "name": "get_gene_disease_associations",
+      "description": "Retrieve disease associations for a list of genes from the knowledge graph"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "Transcriptomics Analysis Workflow",
+      "description": "Complete workflow for analyzing differential gene expression data using tKOI network propagation.",
+      "text": "I have a differential expression dataset. Please help me: 1) Clean and standardize the data, 2) Run tKOI network analysis, 3) Export results, and 4) Interpret the biological findings using the SPOKE knowledge graph."
+    },
+    {
+      "name": "Gene Pathway Enrichment",
+      "description": "Query the SPOKE knowledge graph to find pathways associated with a set of genes.",
+      "text": "Find all pathways associated with my list of differentially expressed genes and identify which pathways are shared by multiple genes."
+    },
+    {
+      "name": "Gene-Disease Association Analysis",
+      "description": "Explore disease associations for genes of interest using the biomedical knowledge graph.",
+      "text": "Query the SPOKE knowledge graph to find disease associations for my significant genes and summarize the key disease connections."
+    },
+    {
+      "name": "Knowledge Graph Exploration",
+      "description": "Explore the SPOKE biomedical knowledge graph schema and relationships.",
+      "text": "Show me the SPOKE knowledge graph schema including all node types and relationship types, then help me write Cypher queries to explore gene-pathway-disease connections."
+    },
+    {
+      "name": "Data Cleaning for tKOI",
+      "description": "Prepare and clean transcriptomics data for tKOI analysis.",
+      "text": "Help me clean my differential expression data: convert gene IDs to Ensembl format, normalize column names to gene_name/logfc/pvalue/fdr, and export both full and significant-only datasets."
+    },
+    {
+      "name": "tKOI Network Analysis",
+      "description": "Run tKOI network propagation analysis on prepared expression data.",
+      "text": "Run tKOI analysis on my cleaned expression data with default parameters, save the results, and export the network summary statistics to Excel files."
+    },
+    {
+      "name": "Biological Interpretation Report",
+      "description": "Generate a comprehensive biological interpretation of tKOI results.",
+      "text": "Based on my tKOI results and knowledge graph queries, generate a comprehensive biological interpretation report including key genes, pathways, diseases, and the overall biological story."
+    }
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  },
+  "keywords": [
+    "Transcriptomics",
+    "Knowledge Graph",
+    "tKOI",
+    "SPOKE",
+    "Neo4j",
+    "Gene Expression",
+    "Pathway Analysis",
+    "Disease Association",
+    "Network Propagation",
+    "Bioinformatics",
+    "R",
+    "MCP",
+    "Omics Integration"
+  ],
+  "license": "MIT"
+}

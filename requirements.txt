@@ -1,0 +1,27 @@
+# tKOIAgent MCP Server - Python Dependencies
+# ============================================
+# Install with: pip install -r requirements.txt
+# Or use uv: uv pip install -r requirements.txt
+
+# MCP SDK and FastMCP framework
+mcp>=1.0.0
+fastmcp>=2.0.0
+
+# Pydantic for data validation (v2)
+pydantic>=2.0.0
+
+# Neo4j driver for knowledge graph queries
+neo4j>=5.0.0
+
+# Environment variable management
+python-dotenv>=1.0.0
+
+# HTTP client (used by some MCP internals)
+httpx>=0.24.0
+
+# Async support
+anyio>=4.0.0
+
+# Type hints support
+typing-extensions>=4.0.0
+
