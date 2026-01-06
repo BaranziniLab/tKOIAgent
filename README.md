@@ -16,7 +16,7 @@
 
 **tKOIAgent** is a specialized Model Context Protocol (MCP) server that brings advanced transcriptomics analysis capabilities to Claude Desktop. It seamlessly combines:
 
-- 🧬 **R-based transcriptomics analysis** with the powerful [tKOI](https://github.com/Broccolito/tkoi) network propagation algorithm
+- 🧬 **R-based transcriptomics analysis** with the powerful [tKOI](https://broccolito.github.io/software/tkoi/index.html) network propagation algorithm. 
 - 🕸️ **Neo4j knowledge graph querying** using the [SPOKE](https://spoke.ucsf.edu/) biomedical knowledge graph
 - 🤖 **AI-driven biological interpretation** through Claude's natural language understanding
 
@@ -60,7 +60,7 @@ Before installing tKOIAgent, ensure you have:
 ### Quick Install via GitHub Releases
 
 1. **Download the latest release**:
-   - Go to the [Releases page](https://github.com/YOUR_USERNAME/tKOIAgent/releases)
+   - Go to the [Releases page](https://github.com/BaranziniLab/tKOIAgent/releases)
    - Download the `tKOIAgent-v1.0.0.mcpb` bundle file
 
 2. **Install in Claude Desktop**:

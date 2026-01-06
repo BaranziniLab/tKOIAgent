@@ -14,9 +14,9 @@ git add .
 echo "Committing changes..."
 git commit -m "${COMMIT_MESSAGE}"
 
-# Push to skill-dev branch
-echo "Pushing to skill-dev..."
-git push origin skill-dev
+# Push to main branch
+echo "Pushing to main..."
+git push origin main
 
 echo "Done!"
 
