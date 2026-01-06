@@ -108,6 +108,11 @@ The uploaded dataset **must contain all three components**:
 > ✅ Column names may vary  
 > ❌ Missing any component → STOP and ask user to re-upload or clarify
 
+#### C. The tKOI library (spelt like `tkoi` in R) is installed
+
+Check `library(tkoi)` to see if tKOI is varified. 
+If not, install using `devtools::install_github("Broccolito/tkoi")`.
+
 ---
 
 ### 3.2 Study Context Requirement (CRITICAL)
@@ -573,42 +578,9 @@ Use the Knowledge Graph tools to:
 
 ---
 
-### 10.4 Example Workflow
-
-```python
-# 1. Get schema first
-get_knowledge_graph_schema(include_properties=True, response_format="markdown")
-
-# 2. Get pathways for significant genes
-get_gene_pathways(
-    gene_ids=["ENSG00000141510", "ENSG00000171862", "ENSG00000134057"],
-    include_shared=True,
-    response_format="markdown"
-)
-
-# 3. Get disease associations
-get_gene_disease_associations(
-    gene_ids=["ENSG00000141510", "ENSG00000171862"],
-    response_format="markdown"
-)
-
-# 4. Custom query for specific patterns
-query_knowledge_graph(
-    query="""
-    MATCH (g:Gene)-[:PARTICIPATES_GpPW]->(p:Pathway)
-    WHERE g.identifier IN ['ENSG00000141510', 'ENSG00000171862']
-    RETURN g.name, p.name, p.source
-    ORDER BY p.name
-    """,
-    response_format="markdown"
-)
-```
-
----
-
 ### 10.5 Iterative Exploration
 
-- Write multiple queries as needed
+- Write multiple Cypher queries as needed
 - Follow interesting biological leads
 - Look for **supporting, contradicting, or novel insights**
 
