@@ -11,7 +11,6 @@
   [![R Required](https://img.shields.io/badge/R-Required-276DC3.svg)](https://www.r-project.org/)
 </div>
 
----
 
 ## Overview
 
@@ -23,7 +22,6 @@
 
 With tKOIAgent, you can transform raw differential gene expression data into actionable biological insights through an intuitive conversational interface.
 
----
 
 ## Key Features
 
@@ -45,7 +43,6 @@ With tKOIAgent, you can transform raw differential gene expression data into act
 - **File operations**: List, read, preview CSV/TSV/Excel files
 - **Visualization support**: ggplot2 style checking for publication-quality figures
 
----
 
 ## Installation
 
@@ -107,7 +104,6 @@ cd tKOIAgent
 }
 ```
 
----
 
 ## Available Tools
 
@@ -151,7 +147,6 @@ tKOIAgent provides 17 specialized tools organized into three categories:
 | `get_gene_pathways` | Get pathways for gene lists |
 | `get_gene_disease_associations` | Get disease associations |
 
----
 
 ## Example Workflow
 
@@ -262,7 +257,6 @@ I'll now:
 All results are saved in ~/Desktop/ including detailed Excel reports.
 ```
 
----
 
 ## Output Files
 
@@ -282,7 +276,6 @@ After a complete analysis, you'll find these files in your working directory:
   - Tabs: Anatomy, CellType, Complex, Pathway, Disease, BiologicalProcess, etc.
 - `tkoi_summary_significant.xlsx` - FDR-filtered network results
 
----
 
 ## Important Guidelines
 
@@ -312,7 +305,6 @@ Always provide:
 
 This context is essential for accurate biological interpretation.
 
----
 
 ## Configuration
 
@@ -336,7 +328,6 @@ Configure these in your MCP settings:
 
 The default configuration connects to UCSF's SPOKE development server. For production use or private deployments, update the credentials accordingly.
 
----
 
 ## Troubleshooting
 
@@ -358,7 +349,6 @@ The default configuration connects to UCSF's SPOKE development server. For produ
 **Problem**: "Neo4j connection failed"
 - **Solution**: Check your network connection and verify SPOKE credentials in MCP settings
 
----
 
 ## Architecture
 
@@ -368,8 +358,6 @@ tKOIAgent is built on:
 - **Neo4j Python Driver**: For SPOKE knowledge graph queries
 - **R (via subprocess)**: For statistical analysis and tKOI execution
 - **SPOKE**: UCSF's comprehensive biomedical knowledge graph
-
----
 
 ## Contributing
 
@@ -388,7 +376,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
----
 
 ## Citation
 
@@ -412,13 +399,11 @@ And please cite the tKOI package:
 }
 ```
 
----
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
 
 ## Acknowledgments
 
@@ -427,7 +412,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Anthropic**: For Claude Desktop and MCP framework
 - **R Community**: For the amazing statistical computing ecosystem
 
----
 
 ## Contact
 
@@ -435,9 +419,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Email**: wanjun.gu@ucsf.edu
 **GitHub**: [tKOIAgent Repository](https://github.com/YOUR_USERNAME/tKOIAgent)
 
----
-
-<div align="center">
-  <p>Built with ❤️ for the bioinformatics community</p>
-  <p>Powered by Claude Desktop + MCP + R + Neo4j</p>
-</div>
