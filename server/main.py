@@ -42,7 +42,7 @@ if _env_file_loaded:
 
 KNOWLEDGE_GRAPH_URI = os.environ.get("KNOWLEDGE_GRAPH_URI", "bolt://spokedev.cgl.ucsf.edu:7687")
 KNOWLEDGE_GRAPH_USERNAME = os.environ.get("KNOWLEDGE_GRAPH_USERNAME", "neo4j")
-KNOWLEDGE_GRAPH_PASSWORD = os.environ.get("KNOWLEDGE_GRAPH_PASSWORD", "")
+KNOWLEDGE_GRAPH_PASSWORD = os.environ.get("KNOWLEDGE_GRAPH_PASSWORD", "SPOKEdev")
 KNOWLEDGE_GRAPH_DATABASE = os.environ.get("KNOWLEDGE_GRAPH_DATABASE", "spoke")
 
 def print_ascii_banner():
@@ -180,6 +180,53 @@ async def app_lifespan(app):
     logger.info("tKOIAgent MCP server stopped.")
 
 mcp = FastMCP("tkoiagent_mcp", lifespan=app_lifespan)
+
+# =============================================================================
+# Instruction/Skill Tool
+# =============================================================================
+
+@mcp.tool(name="get_instructions")
+async def get_instructions() -> str:
+    """Retrieve the complete tKOIAgent SKILL instructions from SKILL.md.
+
+    This tool returns the comprehensive operational guidelines that must be
+    followed when using tKOIAgent. It should be called at the beginning of
+    any tKOIAgent session to ensure proper understanding of:
+    - Analysis workflow and methodology
+    - Required data formats and preconditions
+    - Tool usage patterns and best practices
+    - Critical rules (tkoi-ONLY analysis policy)
+    - Expected outputs and file structures
+    """
+    try:
+        skill_path = Path(__file__).parent / "SKILL.md"
+        if not skill_path.exists():
+            return json.dumps({
+                "ok": False,
+                "error": {
+                    "code": "SKILL_NOT_FOUND",
+                    "message": f"SKILL.md file not found at {skill_path}"
+                }
+            }, indent=2)
+
+        content = skill_path.read_text(encoding="utf-8")
+        return json.dumps({
+            "ok": True,
+            "data": {
+                "instructions": content,
+                "file_path": str(skill_path),
+                "line_count": len(content.splitlines()),
+                "char_count": len(content)
+            }
+        }, indent=2)
+    except Exception as e:
+        return json.dumps({
+            "ok": False,
+            "error": {
+                "code": "READ_ERROR",
+                "message": f"Failed to read SKILL.md: {str(e)}"
+            }
+        }, indent=2)
 
 # =============================================================================
 # R Toolchain Tools

@@ -17,6 +17,34 @@ This skill document **must be read and followed whenever the LLM invokes or deci
 
 ---
 
+## ⚠️ CRITICAL: tkoi-ONLY Analysis Policy
+
+### MANDATORY RULES — READ BEFORE ANY ANALYSIS
+
+1. **The R library is called `tkoi` (ALL LOWERCASE)**
+   - ✅ Correct: `library(tkoi)`, `tkoi::run_tkoi()`, `tkoi::tkoi_net`
+   - ❌ Wrong: `library(tKOI)`, `library(TKOI)`, `tKOI::run_tkoi()`
+
+2. **ONLY use the `tkoi` library for pathway/network analysis**
+   - ❌ DO NOT use: `clusterProfiler`, `enrichR`, `fgsea`, `GSEA`, `ReactomePA`, `pathfindR`, `gprofiler2`, or ANY other pathway analysis tool
+   - ❌ DO NOT use: Python pathway tools (gseapy, goatools, etc.)
+   - ❌ DO NOT suggest or implement alternative enrichment methods
+   - ✅ ONLY use: `tkoi::run_tkoi()` for all network/pathway analysis
+
+3. **Install tkoi if not present**
+   ```r
+   if (!requireNamespace("tkoi", quietly = TRUE)) {
+     devtools::install_github("Broccolito/tkoi")
+   }
+   library(tkoi)  # ALL LOWERCASE
+   ```
+
+4. **ONLY use `run_tkoi()` from the tkoi package**
+   - DO NOT use any other functions from tkoi (no plotting, no enrichment, no other analysis)
+   - Just: `run_tkoi()` → export results → done
+
+---
+
 ## 2. High-Level Conceptual Model
 
 `tKOIAgent` operates via **two coordinated toolchains**:
@@ -26,7 +54,7 @@ Used for:
 - Setting working directories and managing files
 - Cleaning and processing transcriptomics data
 - Running R scripts for data transformation
-- Executing `tkoi` pathway/network analysis
+- Executing `tkoi` pathway/network analysis (**tkoi ONLY — no other tools**)
 - Exporting structured results (CSV, Excel, RDA)
 
 **Available Tools:**
@@ -70,7 +98,7 @@ Used for:
 | `get_gene_pathways` | Get pathways for genes |
 | `get_gene_disease_associations` | Get disease associations for genes |
 
-The **goal** is to move from **raw gene expression → interpretable biological insight**.
+The **goal** is to move from **raw gene expression → interpretable biological insight** using **tkoi exclusively**.
 
 ---
 
@@ -108,10 +136,14 @@ The uploaded dataset **must contain all three components**:
 > ✅ Column names may vary  
 > ❌ Missing any component → STOP and ask user to re-upload or clarify
 
-#### C. The tKOI library (spelt like `tkoi` in R) is installed
+#### C. The tkoi library must be installed
 
-Check `library(tkoi)` to see if tKOI is varified. 
-If not, install using `devtools::install_github("Broccolito/tkoi")`.
+Check with `library(tkoi)` — note: **ALL LOWERCASE**.
+
+If not installed:
+```r
+devtools::install_github("Broccolito/tkoi")
+```
 
 ---
 
@@ -215,6 +247,10 @@ Both files must have the exact 4 columns: `gene_name`, `logfc`, `pvalue`, `fdr`
 ### 5.5 Example clean_data.R Structure
 
 ```r
+# =============================================================================
+# clean_data.R - Data Cleaning & Harmonization
+# =============================================================================
+
 # Load required libraries
 library(data.table)
 
@@ -250,6 +286,14 @@ Use `write_R_code` to write the script, then `run_R_script` to execute.
 
 ## 6. Step 2 — Running tkoi Analysis
 
+### ⚠️ REMINDER: tkoi ONLY — NO OTHER PATHWAY TOOLS
+
+Before writing any R code for pathway/network analysis:
+- ✅ Use ONLY `tkoi` (lowercase)
+- ❌ DO NOT use clusterProfiler, enrichR, fgsea, GSEA, ReactomePA, pathfindR, gprofiler2
+- ❌ DO NOT use any Python pathway tools
+- ❌ DO NOT implement custom enrichment methods
+
 ### 6.1 Create `run_tkoi.R`
 
 Generate a second R script:
@@ -262,21 +306,26 @@ create_R_file(filename="run_tkoi.R", scaffold=True)
 
 ### 6.2 Package Installation Logic
 
-At the start of the script, check for **`tkoi`** (all lowercase):
+At the start of the script, check for **`tkoi`** (ALL LOWERCASE):
 
 ```r
+# Install tkoi if needed — NOTE: tkoi is ALL LOWERCASE
 if (!requireNamespace("tkoi", quietly = TRUE)) {
   if (!requireNamespace("devtools", quietly = TRUE)) {
     install.packages("devtools")
   }
   devtools::install_github("Broccolito/tkoi")
 }
+
+# Load libraries — tkoi is ALL LOWERCASE
 library(tkoi)
 library(data.table)
 library(writexl)
 ```
 
-⚠️ **CRITICAL**: The library is `tkoi` (all lowercase), not `tKOI`.
+⚠️ **CRITICAL**: 
+- The library is `tkoi` (ALL LOWERCASE), not `tKOI`, not `TKOI`
+- Always write `library(tkoi)`, never `library(tKOI)`
 
 ---
 
@@ -323,7 +372,8 @@ tkoi_result = run_tkoi(
 ⚠️ **CRITICAL RULES:**
 - **DO NOT change any parameters** unless explicitly requested by user
 - **`n_permutation = 30`** is required — higher values will take too long
-- **DO NOT use any other tkoi functions** (no enrichment, no plotting, no other analysis)
+- **DO NOT use any other tkoi functions** (no plotting, no enrichment, no other analysis)
+- **DO NOT use any other pathway analysis tools** — tkoi ONLY
 - Only run `run_tkoi()` and export results
 
 ---
@@ -420,8 +470,11 @@ cat("Exported tkoi_summary_significant.xlsx\n")
 # =============================================================================
 # run_tkoi.R - tkoi Network Propagation Analysis
 # =============================================================================
+# IMPORTANT: This script uses tkoi (ALL LOWERCASE) exclusively
+# DO NOT use any other pathway analysis tools (clusterProfiler, fgsea, etc.)
+# =============================================================================
 
-# Install tkoi if needed
+# Install tkoi if needed — NOTE: tkoi is ALL LOWERCASE
 if (!requireNamespace("tkoi", quietly = TRUE)) {
   if (!requireNamespace("devtools", quietly = TRUE)) {
     install.packages("devtools")
@@ -429,7 +482,7 @@ if (!requireNamespace("tkoi", quietly = TRUE)) {
   devtools::install_github("Broccolito/tkoi")
 }
 
-# Load libraries
+# Load libraries — tkoi is ALL LOWERCASE
 library(tkoi)
 library(data.table)
 library(writexl)
@@ -443,6 +496,7 @@ fdr_threshold = max(expression_data$pvalue[expression_data$fdr <= 0.05], na.rm =
 cat("FDR threshold:", fdr_threshold, "\n")
 
 # Run tkoi analysis (DO NOT MODIFY PARAMETERS)
+# DO NOT use any other pathway tools — tkoi ONLY
 cat("Starting tkoi analysis... This may take 30-60 minutes.\n")
 tkoi_result = run_tkoi(
   expression_data = expression_data,
@@ -550,6 +604,8 @@ Use the Knowledge Graph tools to:
 - Validate network propagation results
 - Reveal mechanistic relationships
 
+**Note**: Knowledge Graph exploration is for **validation and context** — it does NOT replace tkoi analysis.
+
 ---
 
 ### 10.2 Available Tools
@@ -578,7 +634,7 @@ Use the Knowledge Graph tools to:
 
 ---
 
-### 10.5 Iterative Exploration
+### 10.4 Iterative Exploration
 
 - Write multiple Cypher queries as needed
 - Follow interesting biological leads
@@ -617,6 +673,7 @@ Produce a **final narrative artifact** that includes:
 
 - **Do NOT generate plots by default**
 - Only generate figures **if explicitly requested by the user**
+- **DO NOT use tkoi plotting functions** — only use ggplot2 if visualization is requested
 - When plotting:
   - Use `ggplot_style_check` to optimize code
   - Prefer **R + ggplot2**
@@ -634,6 +691,7 @@ Produce a **final narrative artifact** that includes:
 - If `run_R_script` fails, examine stderr output
 - Check for missing packages, syntax errors, or data issues
 - Use `inspect_R_objects` to examine workspace state
+- If tkoi is not installed, install it: `devtools::install_github("Broccolito/tkoi")`
 
 ### Knowledge Graph Errors
 - If queries fail, check Cypher syntax
@@ -668,15 +726,15 @@ TKOIAGENT_NAMESPACE=tKOIAgent
 
 `tKOIAgent` exists to:
 
-> **Transform transcriptomics data into biologically meaningful, knowledge graph–aware insight using structured computation + AI reasoning.**
+> **Transform transcriptomics data into biologically meaningful, knowledge graph–aware insight using tkoi network propagation + AI reasoning.**
 
-It is **not** a black-box enrichment tool.  
-It is a **context-aware, hypothesis-sensitive, graph-integrated analysis system**.
+It is **not** a generic enrichment tool.  
+It is a **tkoi-powered, context-aware, hypothesis-sensitive, graph-integrated analysis system**.
 
 The LLM should:
 1. Understand the biological question
 2. Clean and standardize data appropriately
-3. Run network analysis with appropriate parameters
+3. Run **tkoi** network analysis (NO OTHER TOOLS)
 4. Validate findings against the knowledge graph
 5. Synthesize results into actionable biological insight
 
@@ -690,7 +748,7 @@ The LLM should:
 3. write_R_code → Write data cleaning code
 4. run_R_script → Execute cleaning
 5. create_R_file → Create run_tkoi.R  
-6. write_R_code → Write tkoi analysis code
+6. write_R_code → Write tkoi analysis code (tkoi ONLY — no other tools)
 7. run_R_script → Execute tkoi (timeout_sec=3600)
 8. list_exports → Verify output files exist
 9. preview_table → Examine results
@@ -707,7 +765,8 @@ The LLM should:
 
 | Rule | Details |
 |------|---------|
-| Library name | `tkoi` (all lowercase) |
+| **Library name** | **`tkoi` (ALL LOWERCASE)** — never `tKOI` or `TKOI` |
+| **Pathway tools** | **tkoi ONLY** — no clusterProfiler, fgsea, enrichR, GSEA, etc. |
 | Column names | Exactly: `gene_name`, `logfc`, `pvalue`, `fdr` |
 | tkoi parameters | Use EXACT parameters shown, especially `n_permutation = 30` |
 | R object name | `tkoi_result` (exact name) |
@@ -717,6 +776,33 @@ The LLM should:
 | tkoi functions | ONLY use `run_tkoi()` — no other tkoi functions |
 | Initial files | Only create `clean_data.R` and `run_tkoi.R` |
 | Output files | Exactly 5 data files + 2 R scripts |
+
+---
+
+## 18. Prohibited Tools & Alternatives
+
+### ❌ DO NOT USE THESE TOOLS — EVER
+
+| Prohibited Tool | Language | Why Prohibited |
+|-----------------|----------|----------------|
+| clusterProfiler | R | Use tkoi instead |
+| enrichR | R | Use tkoi instead |
+| fgsea | R | Use tkoi instead |
+| GSEA | R/Java | Use tkoi instead |
+| ReactomePA | R | Use tkoi instead |
+| pathfindR | R | Use tkoi instead |
+| gprofiler2 | R | Use tkoi instead |
+| topGO | R | Use tkoi instead |
+| gseapy | Python | Use tkoi instead |
+| goatools | Python | Use tkoi instead |
+| Any other pathway/enrichment tool | Any | Use tkoi instead |
+
+### ✅ ONLY USE
+
+| Allowed Tool | Usage |
+|--------------|-------|
+| `tkoi::run_tkoi()` | Network propagation analysis |
+| SPOKE Knowledge Graph | Validation and exploration via Cypher |
 
 ---
 

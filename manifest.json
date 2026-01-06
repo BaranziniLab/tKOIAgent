@@ -23,6 +23,10 @@
   },
   "tools": [
     {
+      "name": "get_instructions",
+      "description": "Retrieve the complete tKOIAgent SKILL instructions that must be followed for all analyses. Should be called at the beginning of any session."
+    },
+    {
       "name": "set_workdir",
       "description": "Set the working directory for all R operations and file management"
     },
