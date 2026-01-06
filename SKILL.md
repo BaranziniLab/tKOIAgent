@@ -9,7 +9,7 @@
 
 1. Analyze **transcriptomics / gene expression data**
 2. Convert differential expression results into **knowledge graph–based embeddings**
-3. Perform **network propagation and enrichment analysis** using **tKOI**
+3. Perform **network propagation and enrichment analysis** using **tkoi**
 4. Contextualize results using **AI-driven biological reasoning**
 5. Validate and explore findings using the **SPOKE Neo4j biological knowledge graph**
 
@@ -37,7 +37,7 @@ Used for:
 | `create_R_file` | Create new R script files |
 | `write_R_code` | Write R code to files (replaces content) |
 | `append_R_code` | Append R code to existing files |
-| `run_R_script` | Execute R scripts (supports long-running tKOI) |
+| `run_R_script` | Execute R scripts (supports long-running tkoi) |
 | `run_R_expression` | Execute single R expressions |
 | `list_exports` | List files in working directory |
 | `read_export` | Read file contents |
@@ -57,7 +57,7 @@ Used for:
   - Cell types
   - Anatomical structures
   - Molecular functions
-- Validating and contextualizing tKOI results
+- Validating and contextualizing tkoi results
 
 **Available Tools:**
 | Tool | Description |
@@ -168,32 +168,32 @@ The script must:
 3. Convert gene identifiers to **Ensembl IDs** if needed
    - HGNC → Ensembl
    - Mouse → Human homolog (when appropriate)
-4. Normalize column names
-5. Subset and standardize the dataset
+4. Normalize column names to **exact required names**
+5. Compute FDR if not present
+6. Export cleaned datasets
 
 ---
 
-### 5.3 Final Required Data Structure
+### 5.3 Final Required Data Structure (EXACT COLUMN NAMES)
 
-The cleaned `data.frame` **must contain exactly**:
+The cleaned `data.frame` **must contain exactly these 4 columns with these exact names**:
 
 | Column Name | Description |
 |------------|------------|
-| `gene_name` | Ensembl gene ID |
-| `logfc` | Log fold change |
-| `pvalue` | Raw p-value |
-| `fdr` | FDR-adjusted p-value |
+| `gene_name` | Ensembl gene ID (e.g., ENSG00000141510) |
+| `logfc` | Log fold change (lowercase) |
+| `pvalue` | Raw p-value (lowercase, no underscore) |
+| `fdr` | FDR-adjusted p-value (lowercase) |
 
-- Compute FDR using standard multiple testing correction
-- Ensure numeric integrity
+⚠️ **CRITICAL**: Column names must be exactly `gene_name`, `logfc`, `pvalue`, `fdr` — no variations.
 
 ---
 
-### 5.4 Required Output Files
+### 5.4 Required Output Files from clean_data.R
 
-Export:
+Export exactly **2 files**:
 
-1. **Full dataset**
+1. **Full cleaned dataset**
 ```
 dge_data.csv
 ```
@@ -203,11 +203,47 @@ dge_data.csv
 dge_data_significant.csv
 ```
 
-Use `write_R_code` or `append_R_code` to build the script, then `run_R_script` to execute.
+Both files must have the exact 4 columns: `gene_name`, `logfc`, `pvalue`, `fdr`
 
 ---
 
-## 6. Step 2 — Running tKOI Analysis
+### 5.5 Example clean_data.R Structure
+
+```r
+# Load required libraries
+library(data.table)
+
+# Read input data
+data = fread("input_file.csv")  # Adjust filename as needed
+
+# Rename columns to required exact names
+# (Adjust source column names based on user's data)
+colnames(data)[colnames(data) == "original_gene_col"] = "gene_name"
+colnames(data)[colnames(data) == "original_logfc_col"] = "logfc"
+colnames(data)[colnames(data) == "original_pvalue_col"] = "pvalue"
+
+# Compute FDR if not present
+data$fdr = p.adjust(data$pvalue, method = "BH")
+
+# Select only required columns
+dge_data = data[, .(gene_name, logfc, pvalue, fdr)]
+
+# Export full dataset
+fwrite(dge_data, "dge_data.csv")
+
+# Export significant genes only
+dge_data_significant = dge_data[fdr <= 0.05]
+fwrite(dge_data_significant, "dge_data_significant.csv")
+
+cat("Exported", nrow(dge_data), "total genes\n")
+cat("Exported", nrow(dge_data_significant), "significant genes (FDR <= 0.05)\n")
+```
+
+Use `write_R_code` to write the script, then `run_R_script` to execute.
+
+---
+
+## 6. Step 2 — Running tkoi Analysis
 
 ### 6.1 Create `run_tkoi.R`
 
@@ -221,16 +257,21 @@ create_R_file(filename="run_tkoi.R", scaffold=True)
 
 ### 6.2 Package Installation Logic
 
-At the start of the script:
+At the start of the script, check for **`tkoi`** (all lowercase):
 
 ```r
 if (!requireNamespace("tkoi", quietly = TRUE)) {
-  install.packages("devtools")
+  if (!requireNamespace("devtools", quietly = TRUE)) {
+    install.packages("devtools")
+  }
   devtools::install_github("Broccolito/tkoi")
 }
 library(tkoi)
 library(data.table)
+library(writexl)
 ```
+
+⚠️ **CRITICAL**: The library is `tkoi` (all lowercase), not `tKOI`.
 
 ---
 
@@ -238,6 +279,7 @@ library(data.table)
 
 ```r
 expression_data = fread("dge_data.csv")
+cat("Loaded", nrow(expression_data), "genes\n")
 head(expression_data)
 ```
 
@@ -252,11 +294,12 @@ Before running `run_tkoi()`:
 
 ```r
 fdr_threshold = max(expression_data$pvalue[expression_data$fdr <= 0.05], na.rm = TRUE)
+cat("FDR threshold (p-value corresponding to FDR=0.05):", fdr_threshold, "\n")
 ```
 
 ---
 
-### 6.5 Run tKOI (DEFAULT PARAMETERS)
+### 6.5 Run tkoi (EXACT PARAMETERS — DO NOT MODIFY)
 
 ```r
 tkoi_result = run_tkoi(
@@ -272,7 +315,11 @@ tkoi_result = run_tkoi(
 )
 ```
 
-⚠️ **Do not change parameters unless explicitly requested by the user.**
+⚠️ **CRITICAL RULES:**
+- **DO NOT change any parameters** unless explicitly requested by user
+- **`n_permutation = 30`** is required — higher values will take too long
+- **DO NOT use any other tkoi functions** (no enrichment, no plotting, no other analysis)
+- Only run `run_tkoi()` and export results
 
 ---
 
@@ -285,22 +332,26 @@ tkoi_result = run_tkoi(
 
 ---
 
-## 7. Step 3 — Export tKOI Results
+## 7. Step 3 — Export tkoi Results
 
-### 7.1 Save Raw Results
+### 7.1 Save Raw R Object (EXACT NAMING)
 
 ```r
 save(tkoi_result, file = "tkoi_result.rda")
 ```
 
+⚠️ **CRITICAL**: 
+- Variable must be named `tkoi_result`
+- File must be named `tkoi_result.rda`
+- Do not change these names
+
 ---
 
-### 7.2 Export Network Summary Statistics
+### 7.2 Understanding Network Summary Statistics
 
-`tkoi_result@network_summary_statistics` is a list of data.frames.
+`tkoi_result@network_summary_statistics` is a **list of data.frames**.
 
 Each element represents one modality:
-
 - Anatomy
 - CellType
 - Complex
@@ -313,47 +364,148 @@ Each element represents one modality:
 
 ---
 
-### 7.3 Full Summary Export
+### 7.3 Export Full Summary as Multi-Tab Excel
+
+Use **`writexl`** library (NOT openxlsx):
 
 ```r
-library(openxlsx)
-wb = createWorkbook()
-for (name in names(tkoi_result@network_summary_statistics)) {
-  df = tkoi_result@network_summary_statistics[[name]]
-  addWorksheet(wb, name)
-  writeData(wb, name, df)
-}
-saveWorkbook(wb, "tkoi_summary.xlsx", overwrite = TRUE)
+# Export full summary as multi-tab Excel
+write_xlsx(tkoi_result@network_summary_statistics, "tkoi_summary.xlsx")
+cat("Exported tkoi_summary.xlsx\n")
 ```
+
+⚠️ **CRITICAL**: 
+- Use `writexl::write_xlsx()`, NOT `openxlsx`
+- Export as **single multi-tab Excel file**, NOT separate CSV files
+- File must be named `tkoi_summary.xlsx`
 
 ---
 
-### 7.4 Significant-Only Summary Export
+### 7.4 Export Significant-Only Summary as Multi-Tab Excel
 
-For each data.frame:
-- Filter `fdr <= 0.05`
+Filter each data.frame to FDR ≤ 0.05, then export:
 
 ```r
-wb_sig = createWorkbook()
-for (name in names(tkoi_result@network_summary_statistics)) {
-  df = tkoi_result@network_summary_statistics[[name]]
-  df_sig = df[df$fdr <= 0.05, ]
-  if (nrow(df_sig) > 0) {
-    addWorksheet(wb_sig, name)
-    writeData(wb_sig, name, df_sig)
+# Filter each modality to significant results only
+sig_list = lapply(tkoi_result@network_summary_statistics, function(df) {
+  if ("fdr" %in% colnames(df)) {
+    df[df$fdr <= 0.05, ]
+  } else {
+    df  # Return as-is if no fdr column
   }
+})
+
+# Remove empty data.frames
+sig_list = sig_list[sapply(sig_list, nrow) > 0]
+
+# Export as multi-tab Excel
+write_xlsx(sig_list, "tkoi_summary_significant.xlsx")
+cat("Exported tkoi_summary_significant.xlsx\n")
+```
+
+⚠️ **CRITICAL**: 
+- File must be named `tkoi_summary_significant.xlsx`
+- Must be multi-tab Excel, NOT separate CSV files
+
+---
+
+### 7.5 Complete run_tkoi.R Template
+
+```r
+# =============================================================================
+# run_tkoi.R - tkoi Network Propagation Analysis
+# =============================================================================
+
+# Install tkoi if needed
+if (!requireNamespace("tkoi", quietly = TRUE)) {
+  if (!requireNamespace("devtools", quietly = TRUE)) {
+    install.packages("devtools")
+  }
+  devtools::install_github("Broccolito/tkoi")
 }
-saveWorkbook(wb_sig, "tkoi_summary_significant.xlsx", overwrite = TRUE)
+
+# Load libraries
+library(tkoi)
+library(data.table)
+library(writexl)
+
+# Load expression data
+expression_data = fread("dge_data.csv")
+cat("Loaded", nrow(expression_data), "genes\n")
+
+# Compute FDR threshold
+fdr_threshold = max(expression_data$pvalue[expression_data$fdr <= 0.05], na.rm = TRUE)
+cat("FDR threshold:", fdr_threshold, "\n")
+
+# Run tkoi analysis (DO NOT MODIFY PARAMETERS)
+cat("Starting tkoi analysis... This may take 30-60 minutes.\n")
+tkoi_result = run_tkoi(
+  expression_data = expression_data,
+  subnetwork = tkoi::tkoi_net,
+  pvalue_threshold = fdr_threshold,
+  logfc_threshold = 0.25,
+  indirect_link_threshold = 3,
+  topology_similarity = 0.9,
+  n_permutation = 30,
+  damping_factor = 0.85,
+  maximum_iteration = 500
+)
+cat("tkoi analysis complete.\n")
+
+# Save raw R object
+save(tkoi_result, file = "tkoi_result.rda")
+cat("Saved tkoi_result.rda\n")
+
+# Export full summary as multi-tab Excel
+write_xlsx(tkoi_result@network_summary_statistics, "tkoi_summary.xlsx")
+cat("Exported tkoi_summary.xlsx\n")
+
+# Export significant-only summary as multi-tab Excel
+sig_list = lapply(tkoi_result@network_summary_statistics, function(df) {
+  if ("fdr" %in% colnames(df)) {
+    df[df$fdr <= 0.05, ]
+  } else {
+    df
+  }
+})
+sig_list = sig_list[sapply(sig_list, nrow) > 0]
+write_xlsx(sig_list, "tkoi_summary_significant.xlsx")
+cat("Exported tkoi_summary_significant.xlsx\n")
+
+cat("All exports complete.\n")
 ```
 
 ---
 
-## 8. Step 4 — Contextual Analysis & Interpretation
+## 8. Expected Output Files (COMPLETE LIST)
 
-After tKOI completes, use `read_export` or `preview_table` to load:
+After running `clean_data.R` and `run_tkoi.R`, the working directory should contain **exactly these files**:
+
+### R Scripts (2 files)
+| File | Description |
+|------|-------------|
+| `clean_data.R` | Data cleaning script |
+| `run_tkoi.R` | tkoi analysis script |
+
+### Data Outputs (5 files)
+| File | Description |
+|------|-------------|
+| `dge_data.csv` | Full cleaned DGE data (4 columns: gene_name, logfc, pvalue, fdr) |
+| `dge_data_significant.csv` | FDR-significant genes only |
+| `tkoi_result.rda` | Complete tkoi result R object |
+| `tkoi_summary.xlsx` | Full network summary (multi-tab Excel) |
+| `tkoi_summary_significant.xlsx` | Significant network summary (multi-tab Excel) |
+
+⚠️ **DO NOT create any other files** during initial analysis. Users may request additional files/analyses later.
+
+---
+
+## 9. Step 4 — Contextual Analysis & Interpretation
+
+After tkoi completes, use `read_export` or `preview_table` to load:
 
 - `dge_data_significant.csv`
-- `tkoi_summary_significant.xlsx` (or individual CSVs)
+- `tkoi_summary_significant.xlsx` (use `read_export` to examine)
 
 ### Interpretation Rules
 
@@ -362,6 +514,7 @@ After tKOI completes, use `read_export` or `preview_table` to load:
 
 2. `tkoi_summary_significant.xlsx`
    - Represents **key network nodes after propagation**
+   - Each tab = one modality (Pathway, Disease, CellType, etc.)
 
 ---
 
@@ -382,9 +535,9 @@ But **do not ignore other node types** if biologically compelling.
 
 ---
 
-## 9. Step 5 — Knowledge Graph Exploration (Neo4j / Cypher)
+## 10. Step 5 — Knowledge Graph Exploration (Neo4j / Cypher)
 
-### 9.1 Objective
+### 10.1 Objective
 
 Use the Knowledge Graph tools to:
 
@@ -394,7 +547,7 @@ Use the Knowledge Graph tools to:
 
 ---
 
-### 9.2 Available Tools
+### 10.2 Available Tools
 
 | Tool | Use Case |
 |------|----------|
@@ -408,7 +561,7 @@ Use the Knowledge Graph tools to:
 
 ---
 
-### 9.3 Query Construction Rules
+### 10.3 Query Construction Rules
 
 - Use `node_id` or equivalent identifiers from `tkoi_summary_significant.xlsx`
 - Use Ensembl gene IDs from `dge_data_significant.csv`
@@ -420,7 +573,7 @@ Use the Knowledge Graph tools to:
 
 ---
 
-### 9.4 Example Workflow
+### 10.4 Example Workflow
 
 ```python
 # 1. Get schema first
@@ -453,7 +606,7 @@ query_knowledge_graph(
 
 ---
 
-### 9.5 Iterative Exploration
+### 10.5 Iterative Exploration
 
 - Write multiple queries as needed
 - Follow interesting biological leads
@@ -461,7 +614,7 @@ query_knowledge_graph(
 
 ---
 
-## 10. Step 6 — Final Summary Artifact (REQUIRED)
+## 11. Step 6 — Final Summary Artifact (REQUIRED)
 
 Produce a **final narrative artifact** that includes:
 
@@ -488,10 +641,10 @@ Produce a **final narrative artifact** that includes:
 
 ---
 
-## 11. Visualization Rules
+## 12. Visualization Rules
 
 - **Do NOT generate plots by default**
-- Only generate figures **if explicitly requested**
+- Only generate figures **if explicitly requested by the user**
 - When plotting:
   - Use `ggplot_style_check` to optimize code
   - Prefer **R + ggplot2**
@@ -503,7 +656,7 @@ Produce a **final narrative artifact** that includes:
 
 ---
 
-## 12. Error Handling
+## 13. Error Handling
 
 ### R Execution Errors
 - If `run_R_script` fails, examine stderr output
@@ -516,12 +669,12 @@ Produce a **final narrative artifact** that includes:
 - Use `get_knowledge_graph_schema` to confirm available labels
 
 ### Timeout Issues
-- tKOI analysis requires `timeout_sec=3600` (1 hour)
+- tkoi analysis requires `timeout_sec=3600` (1 hour)
 - For very large datasets, may need even longer timeouts
 
 ---
 
-## 13. Environment Variables
+## 14. Environment Variables
 
 The following environment variables must be configured:
 
@@ -539,11 +692,11 @@ TKOIAGENT_NAMESPACE=tKOIAgent
 
 ---
 
-## 14. Core Philosophy of tKOIAgent
+## 15. Core Philosophy of tKOIAgent
 
 `tKOIAgent` exists to:
 
-> **Transform transcriptomics data into biologically meaningful, knowledge-graph–aware insight using structured computation + AI reasoning.**
+> **Transform transcriptomics data into biologically meaningful, knowledge graph–aware insight using structured computation + AI reasoning.**
 
 It is **not** a black-box enrichment tool.  
 It is a **context-aware, hypothesis-sensitive, graph-integrated analysis system**.
@@ -557,17 +710,17 @@ The LLM should:
 
 ---
 
-## 15. Quick Reference: Tool Sequence
+## 16. Quick Reference: Tool Sequence
 
 ```
-1. set_workdir → Set working directory
+1. set_workdir → Set working directory to user's data folder
 2. create_R_file → Create clean_data.R
 3. write_R_code → Write data cleaning code
 4. run_R_script → Execute cleaning
-5. create_R_file → Create run_tkoi.R
-6. write_R_code → Write tKOI analysis code
-7. run_R_script → Execute tKOI (timeout_sec=3600)
-8. list_exports → Check output files
+5. create_R_file → Create run_tkoi.R  
+6. write_R_code → Write tkoi analysis code
+7. run_R_script → Execute tkoi (timeout_sec=3600)
+8. list_exports → Verify output files exist
 9. preview_table → Examine results
 10. get_knowledge_graph_schema → Understand KG structure
 11. get_gene_pathways → Query pathways
@@ -578,4 +731,22 @@ The LLM should:
 
 ---
 
+## 17. Critical Rules Summary
+
+| Rule | Details |
+|------|---------|
+| Library name | `tkoi` (all lowercase) |
+| Column names | Exactly: `gene_name`, `logfc`, `pvalue`, `fdr` |
+| tkoi parameters | Use EXACT parameters shown, especially `n_permutation = 30` |
+| R object name | `tkoi_result` (exact name) |
+| RDA filename | `tkoi_result.rda` (exact name) |
+| Excel export | Use `writexl::write_xlsx()`, NOT openxlsx |
+| Excel format | Multi-tab Excel files, NOT separate CSVs |
+| tkoi functions | ONLY use `run_tkoi()` — no other tkoi functions |
+| Initial files | Only create `clean_data.R` and `run_tkoi.R` |
+| Output files | Exactly 5 data files + 2 R scripts |
+
+---
+
 **End of SKILL.md**
+
