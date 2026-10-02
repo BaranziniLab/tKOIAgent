@@ -1,0 +1,6 @@
+{
+  "name": "tkoi",
+  "owner": {"name": "Baranzini Lab"},
+  "description": "tKOI analysis and graph contextualization",
+  "plugins": [{"name": "tkoi-agent", "source": "./", "description": "tKOI enrichment and its exact analysis graph"}]
+}

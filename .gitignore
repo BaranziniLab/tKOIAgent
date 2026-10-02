@@ -1,0 +1,7 @@
+.DS_Store
+.python/
+.venv/
+__pycache__/
+*.pyc
+dist/
+tests/output/

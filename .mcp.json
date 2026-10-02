@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "tkoi-graph": {
+      "command": "uv",
+      "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/tkoi-knowledge-graph/scripts/server.py"]
+    }
+  }
+}

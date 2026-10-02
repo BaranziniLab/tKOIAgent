@@ -1,0 +1,9 @@
+{
+  "name": "tkoi-agent",
+  "version": "2.0.0",
+  "description": "Run tKOI enrichment and contextualize its exact saved analysis graph.",
+  "author": {"name": "Baranzini Lab"},
+  "repository": "https://github.com/BaranziniLab/tKOIAgent",
+  "skills": "./skills/",
+  "mcpServers": "./.codex-plugin/mcp.json"
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "tkoi-graph": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "--script", "${PLUGIN_ROOT}/skills/tkoi-knowledge-graph/scripts/server.py"]
+    }
+  }
+}

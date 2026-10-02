@@ -1,0 +1,41 @@
+args = commandArgs(TRUE)
+out = args[1]
+dir.create(out, recursive = TRUE, showWarnings = FALSE)
+out = normalizePath(out)
+root = normalizePath('.')
+run = function(script, args, success = TRUE) {
+  status = system2(file.path(R.home('bin'), 'Rscript'), c('--vanilla', shQuote(file.path(root, 'skills/tkoi-analysis/scripts', script)), shQuote(args)))
+  stopifnot(if (success) status == 0 else status != 0)
+}
+genes = as.data.frame(tkoi::genes)
+genes = genes[!duplicated(genes$ensembl) & !is.na(genes$ensembl), ][1:12, ]
+graph = igraph::induced_subgraph(tkoi::tkoi_net, genes$id)
+graph = igraph::delete_edges(graph, igraph::E(graph))
+n = igraph::vcount(graph)
+graph = igraph::add_edges(graph, as.vector(rbind(seq_len(n), c(2:n, 1))))
+igraph::E(graph)$edge_type = rep(c('FIXTURE_LAYER_A', 'FIXTURE_LAYER_B'), length.out = n)
+saveRDS(graph, file.path(out, 'graph.rds'))
+raw = data.frame(gene = paste0(genes$ensembl, '.12'), effect = seq(0.5, 2, length.out = n), p = rep(0.001, n))
+write.csv(raw, file.path(out, 'raw.csv'), row.names = FALSE)
+options = c('--gene-column', 'gene', '--logfc-column', 'effect', '--pvalue-column', 'p')
+run('prepare.R', c(file.path(out, 'raw.csv'), file.path(out, 'prepared.csv'), options))
+prepared = read.csv(file.path(out, 'prepared.csv'))
+stopifnot(identical(prepared$gene_name, genes$ensembl))
+bad = rbind(raw, raw[1, ])
+bad$p[2] = NA
+write.csv(bad, file.path(out, 'bad.csv'), row.names = FALSE)
+run('prepare.R', c(file.path(out, 'bad.csv'), file.path(out, 'rejected.csv'), options), FALSE)
+run('prepare.R', c(file.path(out, 'bad.csv'), file.path(out, 'cleaned.csv'), options, '--invalid', 'drop', '--duplicates', 'first'))
+stopifnot(nrow(read.csv(file.path(out, 'cleaned.csv'))) == n - 1)
+run('analyze.R', c(file.path(out, 'prepared.csv'), file.path(out, 'run'), '--graph', file.path(out, 'graph.rds'), '--permutations', '2', '--cores', '1'))
+before = tools::md5sum(file.path(out, 'run/analysis.rds'))
+run('analyze.R', c(file.path(out, 'prepared.csv'), file.path(out, 'run')), FALSE)
+stopifnot(identical(before, tools::md5sum(file.path(out, 'run/analysis.rds'))), !dir.exists(file.path(out, 'run/.tkoi-running')))
+result = readRDS(file.path(out, 'run/analysis.rds'))
+stored = tkoi::get_analysis_graph(result)
+stopifnot(identical(igraph::as_edgelist(stored), igraph::as_edgelist(graph)), identical(igraph::vertex_attr(stored), igraph::vertex_attr(graph)), identical(igraph::edge_attr(stored), igraph::edge_attr(graph)))
+legacy = result
+legacy@subnetwork = NULL
+saveRDS(legacy, file.path(out, 'legacy.rds'))
+jsonlite::write_json(list(nodes = igraph::V(graph)$name, vertices = n, edges = n), file.path(out, 'expected.json'), auto_unbox = TRUE)
+cat('Analysis fixture and preprocessing checks passed\n')
