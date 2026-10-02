@@ -7,7 +7,7 @@ description: Set up R and tKOI, prepare human differential-expression results, r
 
 This skill and `tkoi-knowledge-graph` form the tKOI agent plugin for
 [Codex](https://openai.com/codex/), [Claude Code](https://claude.com/product/claude-code), and
-[BioRouter](https://github.com/BaranziniLab/biorouter). Use your coding agent's normal shell and file tools
+[BioRouter](https://biorouter.ucsf.edu/). Use your coding agent's normal shell and file tools
 for R execution. The bundled MCP server provides graph queries after analysis.
 
 ## Setup
