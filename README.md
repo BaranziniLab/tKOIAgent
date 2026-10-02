@@ -1,6 +1,7 @@
 # tKOI Agent
 
-A plugin for **Codex, Claude Code, and BioRouter** that prepares human
+A plugin for [Codex](https://openai.com/codex/), [Claude Code](https://claude.com/product/claude-code), and
+[BioRouter](https://github.com/BaranziniLab/biorouter) that prepares human
 differential-expression data, runs [tKOI](https://github.com/BaranziniLab/tkoi),
 and contextualizes enrichment by traversing the **exact igraph saved with that
 analysis**.
@@ -37,7 +38,7 @@ This installs tkoi >= 1.3.0 and missing dependencies. Installing the plugin alon
 does not install R or its packages. The server's inline Python dependency is
 managed by uv. Restart the MCP connection after setting up missing prerequisites.
 
-## Codex
+## [Codex](https://openai.com/codex/)
 
 ```sh
 codex plugin marketplace add BaranziniLab/tKOIAgent --ref main
@@ -49,7 +50,7 @@ saved-result contextualization. Check the plugin and MCP tools in your Codex
 session after installation. This repository supplies the portable Agent Plugins
 format and a native Codex compatibility manifest.
 
-## Claude Code
+## [Claude Code](https://claude.com/product/claude-code)
 
 ```sh
 claude plugin marketplace add BaranziniLab/tKOIAgent
@@ -60,7 +61,7 @@ Invoke `/tkoi-agent:tkoi-analysis` or `/tkoi-agent:tkoi-knowledge-graph`. For a
 local checkout, launch `claude --plugin-dir /absolute/path/tKOIAgent` instead.
 The Claude adapter discovers the same skills and starts the same graph server.
 
-## BioRouter
+## [BioRouter](https://github.com/BaranziniLab/biorouter)
 
 ```sh
 biorouter skill install https://github.com/BaranziniLab/tKOIAgent

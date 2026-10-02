@@ -73,8 +73,9 @@ after installing missing prerequisites. If `Rscript` is not on PATH, set
 `R_LIBS_USER` there too when using a project library. Paths containing spaces
 must remain one argument; JSON argument arrays already preserve this.
 
-See the [plugin README](../../../README.md) for the Codex, Claude Code, and
-BioRouter installation commands. The server uses local stdio and reads the
+See the [plugin README](../../../README.md) for the [Codex](https://openai.com/codex/),
+[Claude Code](https://claude.com/product/claude-code), and
+[BioRouter](https://github.com/BaranziniLab/biorouter) installation commands. The server uses local stdio and reads the
 analysis file you explicitly connect. It does not need a Neo4j endpoint or
 SPOKE credentials. It retains one graph connection per server process; reconnect
 when switching analyses and use the newly returned analysis ID.
